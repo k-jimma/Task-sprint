@@ -21,7 +21,7 @@ class Token(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     
-class loginRequest(BaseModel):
+class LoginRequest(BaseModel):
     email: EmailStr
     password: str
     

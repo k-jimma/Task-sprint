@@ -1,4 +1,4 @@
-from sqlalchemy import column, Integer, String, DateTime, Enum, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -17,11 +17,11 @@ class TaskPriority(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id = column(Integer, primary_key=True, index=True)
-    email = column(String, unique=True, index=True, nullable=False)
-    password_hash = column(String, nullable=False)
-    name = column(String, nullable=True)
-    created_at = column(DateTime, default=datetime.utcnow)
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    name = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     tasks = relationship("Task", back_populates="owner")
 
@@ -29,16 +29,16 @@ class User(Base):
 class Task(Base):
     __tablename__ = "tasks"
 
-    id = column(Integer, primary_key=True, index=True)
-    user_id = column(Integer, ForeignKey("users.id"), nullable=False)
-    title = column(String, nullable=False)
-    description = column(Text, default="")
-    status = column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
-    priority = column(Enum(TaskPriority), default=TaskPriority.medium, nullable=False)
-    due_date = column(DateTime, nullable=True)
-    assignee = column(String, nullable=True)
-    labels = column(String, default="")
-    created_at = column(DateTime, default=datetime.utcnow)
-    updated_at = column(DateTime, default=datetime.utcnow)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(Text, default="")
+    status = Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
+    priority = Column(Enum(TaskPriority), default=TaskPriority.medium, nullable=False)
+    due_date = Column(DateTime, nullable=True)
+    assignee = Column(String, nullable=True)
+    labels = Column(String, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="tasks")
