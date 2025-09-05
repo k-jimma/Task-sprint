@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import auth
+from .routers import tasks 
 import os
 
 from .database import Base, engine
+
 
 app = FastAPI(title="Task Sprint API", version="0.1.0")
 
@@ -22,3 +24,4 @@ def health():
     return {"status": "OK"}
 
 app.include_router(auth.router)
+app.include_router(tasks.router)
