@@ -58,8 +58,8 @@ def get_task(task_id: int,
         raise HTTPException(status_code=404, detail="Task not found")
     return task
 
-@router.patch("/{task_id}", responce_model=TaskOut)
-def opdate_task(task_id: int,
+@router.patch("/{task_id}", response_model=TaskOut)
+def update_task(task_id: int,
                 payload: TaskUpdate,
                 db: Session = Depends(get_db),
                 current_user: User = Depends(get_current_user)):
