@@ -29,7 +29,7 @@ def signup(payload: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     
-    subject = {"sub": user.id}
+    subject = user.id
     return Token(
         access_token=create_access_token(subject),
         refresh_token=create_refresh_token(subject),
@@ -41,7 +41,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    subject = {"sub": user.id}
+    subject = user.id
     return Token(
         access_token=create_access_token(subject),
         refresh_token=create_refresh_token(subject),
