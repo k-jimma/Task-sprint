@@ -13,9 +13,9 @@ class UserOut(BaseModel):
     email: EmailStr
     name: Optional[str] = None
     created_at: datetime
-    
-    class config:
-        orm_mode = True
+
+    class Config:
+        from_attributes = True
         
 class Token(BaseModel):
     access_token: str
@@ -54,6 +54,7 @@ class TaskUpdate(BaseModel):
 class TaskOut(BaseModel):
     id: int
     user_id: int
+    title: str
     description: str
     status: str
     priority: str

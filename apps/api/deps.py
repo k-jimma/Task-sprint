@@ -26,9 +26,12 @@ def get_current_user(
     )
     try:
         payload = decode_token(token)
+        if payload.get("type") != "access":
+            raise cred_err
         user_id = payload.get("sub")
         if user_id is None:
             raise cred_err
+        user_id = int(user_id)
     except Exception:
         raise cred_err
     user = db.query(User).filter(User.id == user_id).first()

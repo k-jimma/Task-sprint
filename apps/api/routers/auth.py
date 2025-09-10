@@ -54,15 +54,15 @@ def refresh(refresh_token: str, db: Session = Depends(get_db)):
         payload = decode_token(refresh_token)
         if payload.get("type") != "refresh":
             raise HTTPException(status_code=400, detail="Invalid refresh token")
-        user_id = payload.get("sub")
+        user_id = int(payload.get("sub"))
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     
-    user = db.query(User).filter(User.id == user_id).firsy()
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     
-    subject = {"sub": user.id}
+    subject = user.id
     return Token(
         access_token=create_access_token(subject),
         refresh_token=create_refresh_token(subject),
