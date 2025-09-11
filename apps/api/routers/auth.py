@@ -1,20 +1,19 @@
+# apps/api/routers/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from ..database import SessionLocal
 from ..models import User
 from ..security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from ..schemas import UserCreate, LoginRequest, Token
+from ..deps import get_db  
+
+from pydantic import BaseModel  
+
+class TokenRefreshRequest(BaseModel):
+    refresh_token: str
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        
 @router.post("/signup", response_model=Token)
 def signup(payload: UserCreate, db: Session = Depends(get_db)):
     exists = db.query(User).filter(User.email == payload.email).first()
@@ -47,11 +46,10 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         refresh_token=create_refresh_token(subject),
     )
 
-
 @router.post("/refresh", response_model=Token)
-def refresh(refresh_token: str, db: Session = Depends(get_db)):
+def refresh(body: TokenRefreshRequest, db: Session = Depends(get_db)):
     try:
-        payload = decode_token(refresh_token)
+        payload = decode_token(body.refresh_token)
         if payload.get("type") != "refresh":
             raise HTTPException(status_code=400, detail="Invalid refresh token")
         user_id = int(payload.get("sub"))
@@ -66,4 +64,4 @@ def refresh(refresh_token: str, db: Session = Depends(get_db)):
     return Token(
         access_token=create_access_token(subject),
         refresh_token=create_refresh_token(subject),
-    )    
+    )

@@ -4,6 +4,9 @@ from .routers import auth
 from .routers import tasks 
 import os
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from .database import Base, engine
 
 

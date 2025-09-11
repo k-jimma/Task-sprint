@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey, Text, Index
+from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey, Text, Index, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -45,5 +45,8 @@ class Task(Base):
     
     
     __table_args__ = (
-        Index("ix_tasks_user_title_unique_like", "user_id", "title"),
+        # 旧: Index(...) → 新: UniqueConstraint で重複禁止をDBでも保証
+        UniqueConstraint("user_id", "title", name="uq_tasks_user_title"),
+        # 必要なら検索性能用の追加Indexも残せます
+        Index("ix_tasks_user_created_at", "user_id", "created_at"),
     )
