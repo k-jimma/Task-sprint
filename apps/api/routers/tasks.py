@@ -10,15 +10,20 @@ from ..schemas import TaskCreate, TaskUpdate, TaskOut
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 @router.post("", response_model=TaskOut)
-def create_task (payload: TaskCreate,
-                 db: Session = Depends(get_db),
-                 current_user: User = Depends(get_current_user)):
+def create_task (
+    payload: TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    exists = db.query(Task).filter(Task.user_id == current_user.id, Task.title == payload.title).first()
+    if exists:
+        raise HTTPException(status_code=409, detail="Task with same title already exists")
     task = Task(
         user_id=current_user.id,
         title=payload.title,
         description=payload.description or "",
-        status=TaskStatus(payload.status) if payload.status else TaskStatus.todo,
-        priority=TaskPriority(payload.priority) if payload.priority else TaskPriority.medium,
+        status=payload.status or TaskStatus.todo,
+        priority=payload.priority or TaskPriority.medium,
         due_date=payload.due_date,
         assignee=payload.assignee,
         labels=payload.labels or "",
@@ -37,6 +42,8 @@ def list_tasks(
     status: Optional[TaskStatus] = Query(None),
     priority: Optional[TaskPriority] = Query(None),
     q: Optional[str] = Query(None, description="タイトル/説明の部分一致検索"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
 ):
     query = db.query(Task).filter(Task.user_id == current_user.id)
     if status:
@@ -46,7 +53,7 @@ def list_tasks(
     if q:
         like = f"%{q}%"
         query = query.filter((Task.title.ilike(like)) | (Task.description.ilike(like)))
-    return query.order_by(Task.created_at.desc()).all()
+    return query.order_by(Task.created_at.desc()).limit(limit).offset(offset).all()
 
 
 @router.get("/{task_id}", response_model=TaskOut)
@@ -67,12 +74,8 @@ def update_task(task_id: int,
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    data = payload.dict(exclude_unset=True)
-    if "status" in data and data["status"] is not None:
-        data["status"] = TaskStatus(data["status"])
-    if "priority" in data and data["priority"] is not None:
-        data["priority"] = TaskPriority(data["priority"])
-        
+    data = payload.model_dump(exclude_unset=True)
+
     for k, v in data.items():
         setattr(task, k, v)
     task.updated_at = datetime.utcnow()

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey, Text, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -30,15 +30,20 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    title = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(120), nullable=False, index=True)
     description = Column(Text, default="")
-    status = Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
-    priority = Column(Enum(TaskPriority), default=TaskPriority.medium, nullable=False)
-    due_date = Column(DateTime, nullable=True)
-    assignee = Column(String, nullable=True)
-    labels = Column(String, default="")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False, index=True)
+    priority = Column(Enum(TaskPriority), default=TaskPriority.medium, nullable=False, index=True)
+    due_date = Column(DateTime, nullable=True, index=True)
+    assignee = Column(String(120), nullable=True)
+    labels = Column(String(240), default="")
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     owner = relationship("User", back_populates="tasks")
+    
+    
+    __table_args__ = (
+        Index("ix_tasks_user_title_unique_like", "user_id", "title"),
+    )

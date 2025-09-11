@@ -1,7 +1,7 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List
 from datetime import datetime
-from typing import List
+from .models import TaskStatus, TaskPriority
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -24,32 +24,30 @@ class Token(BaseModel):
     
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
-    
-    
+    password: str = Field(..., min_length=8, max_length=128)
+
 class TaskBase(BaseModel):
-    title: str
-    description: Optional[str] = ""
-    status: Optional[str] = "todo"
-    priority: Optional[str] = "medium"
+    title: str = Field(..., min_length=1, max_length=120)
+    description: Optional[str] = Field("", max_length=2000)
+    status: Optional[TaskStatus] = TaskStatus.todo
+    priority: Optional[TaskPriority] = TaskPriority.medium
     due_date: Optional[datetime] = None
-    assignee: Optional[str] = None
-    labels: Optional[str] = ""
-    
-    
+    assignee: Optional[str] = Field(None, max_length=120)
+    labels: Optional[str] = Field("", max_length=240)
+
+
 class TaskCreate(TaskBase):
-    title: str
-    
+    title: str = Field(..., min_length=1, max_length=120)
+
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
-    priority: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=1, max_length=120)
+    description: Optional[str] = Field(None, max_length=2000)
+    status: Optional[TaskStatus] = None
+    priority: Optional[TaskPriority] = None
     due_date: Optional[datetime] = None
-    assignee: Optional[str] = None
-    labels: Optional[str] = None
-    
+    assignee: Optional[str] = Field(None, max_length=120)
+    labels: Optional[str] = Field(None, max_length=240)
 
 class TaskOut(BaseModel):
     id: int
