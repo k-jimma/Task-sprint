@@ -3,13 +3,11 @@ from datetime import datetime, timedelta
 from jose import jwt
 from passlib.context import CryptContext
 
-# ===== 設定 =====
 SECRET_KEY = os.getenv("SECRET_KEY", "please_change_me_32chars_min")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-# ===== パスワードハッシュ =====
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
@@ -18,10 +16,9 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
-# ===== JWT =====
 def create_access_token(subject: int) -> str:
     to_encode = {
-        "sub": str(subject),           # ユーザーIDを文字列で
+        "sub": str(subject),           
         "type": "access",
         "exp": datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     }
